@@ -50,6 +50,9 @@ object Exer43 {
       case (Some(x), Some(y)) => Some(f(x, y))
       case _ => None
     }
+
+  def map2a[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+    a flatMap (aa => b.map (bb => f(aa, bb)))
 }
 
 object Exer44 {
@@ -69,14 +72,28 @@ object Exer44 {
 
   def sequence1[A](a: List[Option[A]]): Option[List[A]] = {
     a match {
-      case Nil => None
-      case x :: xs => x flatMap(xx => sequence1(xs) map (ys => xx : ys))
+      case Nil => Some(Nil)
+      case x :: xs => x flatMap(xx => sequence1(xs) map (ys => xx :: ys))
     }
   }
 }
 
 object Exer45 {
-  def tranverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
-
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
+    a match {
+      case Nil => Some(Nil)
+      case x :: xs => f(x) flatMap(xx => traverse(xs)(f) map (ys => xx :: ys))
+    }
   }
+
+  import Exer43.map2
+
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
+    a match {
+      case Nil => Some(Nil)
+      case x :: xs => map2(f(x), traverse(xs)(f))(_::_)
+    }
+
+  def sequence[A](a: List[Option[A]]): Option[List[A]] =
+    traverse(a)(identity)
 }
